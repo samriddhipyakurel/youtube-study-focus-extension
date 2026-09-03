@@ -29,7 +29,8 @@
     // 2. DSA (Data Structures & Algorithms) & Competitive Programming
     'dsa', 'data structure', 'data structures', 'algorithm', 'algorithms', 'leetcode', 'codeforces', 
     'hackerrank', 'codechef', 'competitive programming', 'tree', 'graph', 'dynamic programming', 
-    'recursion', 'sorting', 'binary search', 'array', 'linked list', 'stack', 'queue', 'heap', 'hashmap',
+    'recursion', 'sorting', 'binary search', 'array', 'linked list', 'stack', 'queue', 'heap', 'hashmap', 
+    'striver', 'neetcode', 'babbar', 'kunal', 'gate', 'interview',
 
     // 3. Python, Programming, Coding & IT
     'python', 'programming', 'coding', 'coder', 'developer', 'software', 'software engineering', 
@@ -45,14 +46,15 @@
     'inspiration', 'discipline', 'mindset', 'deep work', 'study focus', 'study with me', 
     'studying motivation', 'focus motivation', 'study hard', 'student', 'students', 'exam', 
     'prep', 'gmat', 'sat', 'gre', 'neet', 'jee', 'school', 'university', 'khan academy', 'mit', 
-    'stanford', 'harvard',
+    'stanford', 'harvard', 'lecture', 'tutorial', 'goggins', 'huberman', 'speech',
 
     // 6. Music, Songs, Lofi & Focus Audio
     'music', 'song', 'songs', 'lofi', 'lo-fi', 'beat', 'beats', 'instrumental', 'soundtrack', 
     'classical', 'piano', 'violin', 'guitar', 'jazz', 'synthwave', 'chill', 'chilled', 'ambient', 
     'study beats', 'playlist', 'bgm', 'rain', 'relax', 'relaxing', 'relaxation', 'calm', 
     'peaceful', 'concentration', 'brain', 'focus music', 'study music', 'study mix', 'mix', 
-    'alpha waves', 'binaural', 'pomodoro', 'audio', 'sound', 'sounds'
+    'alpha waves', 'binaural', 'pomodoro', 'audio', 'sound', 'sounds', 'stream', 'live', 'radio', 
+    'chopin', 'mozart', 'beethoven', 'hans zimmer', 'interstellar'
   ];
 
   // Distracting Social Media Domains
@@ -64,7 +66,7 @@
   let currentQuoteIndex = 0;
   let filterInterval = null;
   let domObserver = null;
-  let verifiedVideoId = null;
+  let allowedVideoIds = new Set(); // Store user-allowed & verified video IDs
 
   // Initialize Extension State
   function init() {
@@ -185,7 +187,6 @@
       removeMotivationalBanner();
       checkWatchPageVideoTopic();
     } else {
-      verifiedVideoId = null; // Reset video verification on leaving watch page
       removeNonStudyVideoBlocker();
     }
 
@@ -243,21 +244,20 @@
     });
   }
 
-  // Check if current watch video title is allowed (with video session caching so music NEVER stops mid-playback!)
+  // Check if current watch video title is allowed (with Manual Bypass & Video Locking)
   function checkWatchPageVideoTopic() {
     if (!currentStudyMode) return;
 
-    // Get current video ID e.g. ?v=xyz123
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get('v');
 
-    // If this video ID was ALREADY verified during this playback session, NEVER stop or recheck!
-    if (videoId && videoId === verifiedVideoId) {
+    // 1. If this video ID was already verified or allowed by user, NEVER block!
+    if (videoId && allowedVideoIds.has(videoId)) {
       removeNonStudyVideoBlocker();
       return;
     }
 
-    // Ignore title evaluation while an Ad is playing on YouTube
+    // 2. Ignore evaluation during YouTube Ad playback
     if (document.querySelector('.ad-interrupting, .ytp-ad-player-overlay, .ytp-ad-text')) {
       return;
     }
@@ -280,12 +280,11 @@
     const isAllowed = STRICT_ALLOWED_KEYWORDS.some(kw => fullText.includes(kw));
 
     if (isAllowed) {
-      if (videoId) verifiedVideoId = videoId; // Lock video ID as verified!
+      if (videoId) allowedVideoIds.add(videoId);
       removeNonStudyVideoBlocker();
     } else {
-      // Recheck after 1 second before showing blocker (avoids false-positives when YouTube title is rendering)
+      // Delay check by 1200ms to prevent SPA render false positives
       setTimeout(() => {
-        // If user already navigated away, abort
         const currentParams = new URLSearchParams(window.location.search);
         if (currentParams.get('v') !== videoId) return;
 
@@ -293,14 +292,15 @@
         const recheckText = (document.title + ' ' + (recheckElem ? recheckElem.textContent : '') + ' ' + channelText).toLowerCase();
         
         if (STRICT_ALLOWED_KEYWORDS.some(kw => recheckText.includes(kw))) {
-          if (videoId) verifiedVideoId = videoId; // Lock video ID as verified!
+          if (videoId) allowedVideoIds.add(videoId);
           removeNonStudyVideoBlocker();
         } else {
+          // Pause and show blocker (with Allow & Play option)
           const videoElem = document.querySelector('video');
           if (videoElem) videoElem.pause();
           showNonStudyVideoBlocker();
         }
-      }, 1000);
+      }, 1200);
     }
   }
 
@@ -313,7 +313,7 @@
       <div class="yt-focus-card">
         <div class="yt-focus-icon">🔒</div>
         <h2>Video Blocked by Strict Focus Filter</h2>
-        <p>This video does not match your strict study criteria. Only Math, DSA, Python/Programming, Problem Solving, Motivation, and Music are allowed.</p>
+        <p>This video title did not match default study keywords. If this is a study lecture, tutorial, or focus music, click <strong>Allow & Play Video</strong> below.</p>
         <div class="yt-focus-allowed-list">
           <strong>Strictly Permitted Topics:</strong>
           <ul>
@@ -324,17 +324,36 @@
             <li>Study Motivation & Music / Lofi / Beats</li>
           </ul>
         </div>
-        <button class="yt-focus-primary-btn" id="yt-nonstudy-home-btn">
-          🏠 Return to Study Feed
-        </button>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="yt-focus-primary-btn" id="yt-nonstudy-allow-btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+            ▶ Allow & Play Video
+          </button>
+          <button class="yt-focus-primary-btn" id="yt-nonstudy-home-btn" style="background: #334155; box-shadow: none;">
+            🏠 Return to Feed
+          </button>
+        </div>
       </div>
     `;
 
     document.body.appendChild(overlay);
 
-    const btn = overlay.querySelector('#yt-nonstudy-home-btn');
-    if (btn) {
-      btn.addEventListener('click', () => {
+    // Button: Allow & Play Video (Bypasses filter for this specific video ID)
+    const allowBtn = overlay.querySelector('#yt-nonstudy-allow-btn');
+    if (allowBtn) {
+      allowBtn.addEventListener('click', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('v');
+        if (videoId) allowedVideoIds.add(videoId);
+        removeNonStudyVideoBlocker();
+        const videoElem = document.querySelector('video');
+        if (videoElem) videoElem.play();
+      });
+    }
+
+    // Button: Return to Study Feed
+    const homeBtn = overlay.querySelector('#yt-nonstudy-home-btn');
+    if (homeBtn) {
+      homeBtn.addEventListener('click', () => {
         window.location.href = 'https://www.youtube.com/';
       });
     }

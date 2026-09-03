@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Study Focus</title>
+  <link rel="stylesheet" href="popup-styles.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🎓</div>
+        <div class="brand-text">
+          <h1>YouTube Focus</h1>
+          <span class="version">v1.0</span>
+        </div>
+      </div>
+      <div class="status-pill active" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Active</span>
+      </div>
+    </header>
+
+    <!-- Study Mode Toggle Card -->
+    <div class="card toggle-card">
+      <div class="toggle-info">
+        <span class="toggle-title">Study Mode</span>
+        <span class="toggle-desc">Blocks Shorts, comments & sidebars</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="study-mode-toggle" checked>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <!-- Pomodoro Timer Card -->
+    <div class="card timer-card">
+      <div class="timer-header">
+        <span class="card-title">⏱️ Pomodoro Focus Timer</span>
+        <span class="timer-mode-badge">25 MIN</span>
+      </div>
+
+      <div class="timer-display-wrapper">
+        <svg class="progress-ring" width="150" height="150">
+          <circle class="progress-ring-bg" cx="75" cy="75" r="65" />
+          <circle class="progress-ring-circle" id="timer-progress-ring" cx="75" cy="75" r="65" />
+        </svg>
+        <div class="timer-text-container">
+          <span class="timer-time" id="timer-display">25:00</span>
+          <span class="timer-status-label" id="timer-state-label">Ready to Focus</span>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="btn btn-primary" id="start-pause-btn">
+          <span id="btn-icon">▶</span>
+          <span id="btn-text">Start Focus</span>
+        </button>
+        <button class="btn btn-secondary" id="reset-btn" title="Reset Timer">
+          🔄
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Motivation Card -->
+    <div class="card quote-preview-card">
+      <div class="quote-header">
+        <span>💡 Daily Focus Tip</span>
+      </div>
+      <p class="quote-preview-text">"Deep work is the ability to focus without distraction on a demanding task."</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Distraction-Free YouTube Studying</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -52,7 +52,7 @@
     'classical', 'piano', 'violin', 'guitar', 'jazz', 'synthwave', 'chill', 'chilled', 'ambient', 
     'study beats', 'playlist', 'bgm', 'rain', 'relax', 'relaxing', 'relaxation', 'calm', 
     'peaceful', 'concentration', 'brain', 'focus music', 'study music', 'study mix', 'mix', 
-    'alpha waves', 'binaural', 'pomodoro'
+    'alpha waves', 'binaural', 'pomodoro', 'audio', 'sound', 'sounds'
   ];
 
   // Distracting Social Media Domains
@@ -64,6 +64,7 @@
   let currentQuoteIndex = 0;
   let filterInterval = null;
   let domObserver = null;
+  let verifiedVideoId = null;
 
   // Initialize Extension State
   function init() {
@@ -184,6 +185,7 @@
       removeMotivationalBanner();
       checkWatchPageVideoTopic();
     } else {
+      verifiedVideoId = null; // Reset video verification on leaving watch page
       removeNonStudyVideoBlocker();
     }
 
@@ -241,40 +243,64 @@
     });
   }
 
-  // Check if current watch video title is allowed (with anti-false-positive delay for SPA loading)
+  // Check if current watch video title is allowed (with video session caching so music NEVER stops mid-playback!)
   function checkWatchPageVideoTopic() {
     if (!currentStudyMode) return;
 
+    // Get current video ID e.g. ?v=xyz123
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('v');
+
+    // If this video ID was ALREADY verified during this playback session, NEVER stop or recheck!
+    if (videoId && videoId === verifiedVideoId) {
+      removeNonStudyVideoBlocker();
+      return;
+    }
+
+    // Ignore title evaluation while an Ad is playing on YouTube
+    if (document.querySelector('.ad-interrupting, .ytp-ad-player-overlay, .ytp-ad-text')) {
+      return;
+    }
+
     const titleElem = document.querySelector('h1.ytd-watch-metadata, ytd-watch-flexy h1, #info-contents h1, #title h1, .ytd-video-primary-info-renderer h1');
-    
-    // Don't block prematurely if video element title hasn't rendered yet
     if (!titleElem || !titleElem.textContent.trim()) {
       return; 
     }
 
     const titleText = titleElem.textContent.toLowerCase().trim();
     const docTitle = document.title.toLowerCase().trim();
+    const channelElem = document.querySelector('#owner #channel-name, ytd-channel-name');
+    const channelText = channelElem ? channelElem.textContent.toLowerCase().trim() : '';
 
     if (docTitle === 'youtube' && !titleText) {
       return;
     }
 
-    const fullText = (docTitle + ' ' + titleText).toLowerCase();
+    const fullText = (docTitle + ' ' + titleText + ' ' + channelText).toLowerCase();
     const isAllowed = STRICT_ALLOWED_KEYWORDS.some(kw => fullText.includes(kw));
 
-    if (!isAllowed) {
-      // Recheck after 700ms to avoid false positive during YouTube title rendering
+    if (isAllowed) {
+      if (videoId) verifiedVideoId = videoId; // Lock video ID as verified!
+      removeNonStudyVideoBlocker();
+    } else {
+      // Recheck after 1 second before showing blocker (avoids false-positives when YouTube title is rendering)
       setTimeout(() => {
+        // If user already navigated away, abort
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.get('v') !== videoId) return;
+
         const recheckElem = document.querySelector('h1.ytd-watch-metadata, ytd-watch-flexy h1, #info-contents h1, #title h1');
-        const recheckText = (document.title + ' ' + (recheckElem ? recheckElem.textContent : '')).toLowerCase();
-        if (!STRICT_ALLOWED_KEYWORDS.some(kw => recheckText.includes(kw))) {
+        const recheckText = (document.title + ' ' + (recheckElem ? recheckElem.textContent : '') + ' ' + channelText).toLowerCase();
+        
+        if (STRICT_ALLOWED_KEYWORDS.some(kw => recheckText.includes(kw))) {
+          if (videoId) verifiedVideoId = videoId; // Lock video ID as verified!
+          removeNonStudyVideoBlocker();
+        } else {
           const videoElem = document.querySelector('video');
           if (videoElem) videoElem.pause();
           showNonStudyVideoBlocker();
         }
-      }, 700);
-    } else {
-      removeNonStudyVideoBlocker();
+      }, 1000);
     }
   }
 
@@ -334,7 +360,7 @@
     }
 
     if (!filterInterval) {
-      filterInterval = setInterval(filterYouTubeVideoCards, 350);
+      filterInterval = setInterval(filterYouTubeVideoCards, 500);
     }
   }
 

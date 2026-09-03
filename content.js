@@ -20,11 +20,11 @@
     { quote: "Do something today that your future self will thank you for.", author: "Sean Patrick Flanery" }
   ];
 
-  // STRICT WHITELIST KEYWORDS (ONLY Math, DSA, Python/Programming, Problem Solving, Study Motivation, Music)
+  // COMPREHENSIVE ALLOWED KEYWORDS (Math, DSA, Python/Programming, Problem Solving, Study Motivation, Music)
   const STRICT_ALLOWED_KEYWORDS = [
     // 1. Math
     'math', 'mathematics', 'calculus', 'algebra', 'geometry', 'trigonometry', 'statistic', 'statistics', 
-    'linear algebra', 'differential equation', 'discrete math', 'probability', 'number theory',
+    'linear algebra', 'differential', 'integral', 'equation', 'discrete math', 'probability', 'number theory',
 
     // 2. DSA (Data Structures & Algorithms) & Competitive Programming
     'dsa', 'data structure', 'data structures', 'algorithm', 'algorithms', 'leetcode', 'codeforces', 
@@ -40,13 +40,19 @@
     'problem solving', 'problem-solving', 'problem solver', 'problem solved', 'solve problems', 
     'puzzle', 'aptitude', 'logic puzzle', 'brain teaser',
 
-    // 5. Study Motivation
-    'study motivation', 'study motivational', 'study focus', 'study with me', 'deep work', 
-    'studying motivation', 'focus motivation', 'study hard', 'motivation for students', 'exam motivation',
+    // 5. Study Motivation & Student Focus
+    'study motivation', 'study motivational', 'motivation', 'motivational', 'inspire', 'inspiring', 
+    'inspiration', 'discipline', 'mindset', 'deep work', 'study focus', 'study with me', 
+    'studying motivation', 'focus motivation', 'study hard', 'student', 'students', 'exam', 
+    'prep', 'gmat', 'sat', 'gre', 'neet', 'jee', 'school', 'university', 'khan academy', 'mit', 
+    'stanford', 'harvard',
 
-    // 6. Music & Songs
-    'music', 'song', 'songs', 'lofi', 'instrumental', 'soundtrack', 'classical', 'piano', 
-    'violin', 'chill beats', 'ambient', 'study beats', 'lo-fi', 'playlist', 'bgm'
+    // 6. Music, Songs, Lofi & Focus Audio
+    'music', 'song', 'songs', 'lofi', 'lo-fi', 'beat', 'beats', 'instrumental', 'soundtrack', 
+    'classical', 'piano', 'violin', 'guitar', 'jazz', 'synthwave', 'chill', 'chilled', 'ambient', 
+    'study beats', 'playlist', 'bgm', 'rain', 'relax', 'relaxing', 'relaxation', 'calm', 
+    'peaceful', 'concentration', 'brain', 'focus music', 'study music', 'study mix', 'mix', 
+    'alpha waves', 'binaural', 'pomodoro'
   ];
 
   // Distracting Social Media Domains
@@ -195,23 +201,20 @@
     filterYouTubeVideoCards();
   }
 
-  // Hyper-Strict Filter: Only Math, DSA, Python, Problem Solving, Motivation, Music allowed
+  // Filter YouTube homepage/feed video cards by allowed keywords
   function filterYouTubeVideoCards() {
     if (!currentStudyMode) return;
 
-    // Target all video cards on YouTube
     const videoCards = document.querySelectorAll(
       'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, ytd-rich-grid-media, ytd-playlist-renderer'
     );
 
     videoCards.forEach(card => {
-      // Find title specifically or full text
       const titleElem = card.querySelector('#video-title, #video-title-link, a#video-title, yt-formatted-string#video-title') || card;
       const text = (titleElem.textContent || '').toLowerCase().trim();
 
       if (!text) return;
 
-      // Check if text matches strictly allowed topics
       const isAllowed = STRICT_ALLOWED_KEYWORDS.some(kw => text.includes(kw));
 
       if (!isAllowed) {
@@ -223,7 +226,7 @@
       }
     });
 
-    // Also filter category chip pills at top of YouTube home (e.g. "Gaming", "Podcasts", etc.)
+    // Also filter category chip pills at top of YouTube home
     const categoryChips = document.querySelectorAll('yt-chip-cloud-chip-renderer');
     categoryChips.forEach(chip => {
       const chipText = (chip.textContent || '').toLowerCase().trim();
@@ -238,23 +241,38 @@
     });
   }
 
-  // Check if current watch video title is strictly allowed
+  // Check if current watch video title is allowed (with anti-false-positive delay for SPA loading)
   function checkWatchPageVideoTopic() {
     if (!currentStudyMode) return;
 
-    const titleElem = document.querySelector('h1.ytd-watch-metadata, ytd-watch-flexy h1, #info-contents h1, #title h1');
-    const fullText = (document.title + ' ' + (titleElem ? titleElem.textContent : '')).toLowerCase().trim();
+    const titleElem = document.querySelector('h1.ytd-watch-metadata, ytd-watch-flexy h1, #info-contents h1, #title h1, .ytd-video-primary-info-renderer h1');
+    
+    // Don't block prematurely if video element title hasn't rendered yet
+    if (!titleElem || !titleElem.textContent.trim()) {
+      return; 
+    }
 
-    if (!fullText) return;
+    const titleText = titleElem.textContent.toLowerCase().trim();
+    const docTitle = document.title.toLowerCase().trim();
 
+    if (docTitle === 'youtube' && !titleText) {
+      return;
+    }
+
+    const fullText = (docTitle + ' ' + titleText).toLowerCase();
     const isAllowed = STRICT_ALLOWED_KEYWORDS.some(kw => fullText.includes(kw));
 
     if (!isAllowed) {
-      // Pause video
-      const videoElem = document.querySelector('video');
-      if (videoElem) videoElem.pause();
-
-      showNonStudyVideoBlocker();
+      // Recheck after 700ms to avoid false positive during YouTube title rendering
+      setTimeout(() => {
+        const recheckElem = document.querySelector('h1.ytd-watch-metadata, ytd-watch-flexy h1, #info-contents h1, #title h1');
+        const recheckText = (document.title + ' ' + (recheckElem ? recheckElem.textContent : '')).toLowerCase();
+        if (!STRICT_ALLOWED_KEYWORDS.some(kw => recheckText.includes(kw))) {
+          const videoElem = document.querySelector('video');
+          if (videoElem) videoElem.pause();
+          showNonStudyVideoBlocker();
+        }
+      }, 700);
     } else {
       removeNonStudyVideoBlocker();
     }
@@ -277,7 +295,7 @@
             <li>DSA (Data Structures & Algorithms) & LeetCode</li>
             <li>Python, Coding, Programming & Tech</li>
             <li>IT / Math Problem Solving</li>
-            <li>Study Motivation & Music / Lofi</li>
+            <li>Study Motivation & Music / Lofi / Beats</li>
           </ul>
         </div>
         <button class="yt-focus-primary-btn" id="yt-nonstudy-home-btn">
@@ -304,7 +322,6 @@
   function startYouTubeTopicFilter() {
     filterYouTubeVideoCards();
 
-    // Use MutationObserver for real-time dynamic infinite scrolling hiding
     if (!domObserver) {
       domObserver = new MutationObserver(() => {
         filterYouTubeVideoCards();
@@ -317,7 +334,7 @@
     }
 
     if (!filterInterval) {
-      filterInterval = setInterval(filterYouTubeVideoCards, 250); // Ultra-fast 250ms check
+      filterInterval = setInterval(filterYouTubeVideoCards, 350);
     }
   }
 

@@ -1,0 +1,261 @@
+/* ==========================================================================
+   YouTube & Web Study Focus Mode - Content Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Strict YouTube Distraction & Non-Study Video Hiding Rules
+   -------------------------------------------------------------------------- */
+
+html.yt-study-mode-active #comments,
+html.yt-study-mode-active ytd-comments,
+html.yt-study-mode-active #secondary,
+html.yt-study-mode-active #related,
+html.yt-study-mode-active ytd-watch-next-secondary-results-renderer,
+html.yt-study-mode-active ytd-rich-shelf-renderer[is-shorts],
+html.yt-study-mode-active ytd-reel-shelf-renderer,
+html.yt-study-mode-active ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.yt-study-mode-active ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+html.yt-study-mode-active ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
+html.yt-study-mode-active a[href^="/shorts"],
+html.yt-study-mode-active .ytp-endscreen-content,
+html.yt-study-mode-active .ytp-ce-element,
+html.yt-study-mode-active #chat,
+html.yt-study-mode-active ytd-live-chat-frame {
+  display: none !important;
+}
+
+/* Fallback selector */
+html.yt-study-mode-active a[title="Shorts"] {
+  display: none !important;
+}
+
+/* Force hide all videos flagged by the storytime/distraction filter */
+html.yt-study-mode-active .yt-study-hidden-video,
+.yt-study-hidden-video {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Expand main video container if sidebar is hidden */
+html.yt-study-mode-active #primary.ytd-watch-flexy {
+  max-width: 100% !important;
+  margin-right: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Motivational Banner Styling
+   -------------------------------------------------------------------------- */
+#yt-study-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  padding: 18px 24px;
+  margin: 16px 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(99, 102, 241, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: #ffffff;
+  font-family: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  animation: ytStudyBannerFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 9999;
+}
+
+@keyframes ytStudyBannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.yt-study-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.yt-study-banner-badge {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+
+.yt-study-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.yt-study-banner-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #818cf8;
+}
+
+.yt-study-quote-text {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #f8fafc;
+  font-style: italic;
+}
+
+.yt-study-quote-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c084fc;
+  font-style: normal;
+  margin-top: 2px;
+}
+
+.yt-study-refresh-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.yt-study-refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   3. Fullscreen Overlays: Shorts Blocked, Social Media Blocked, Non-Study Blocked
+   -------------------------------------------------------------------------- */
+#yt-shorts-blocked-overlay,
+#yt-social-blocked-overlay,
+#yt-nonstudy-blocked-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 15, 25, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.yt-focus-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 44px 40px;
+  border-radius: 24px;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.2);
+  animation: ytCardPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes ytCardPop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.yt-focus-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.yt-focus-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #f43f5e;
+}
+
+.yt-focus-card p {
+  font-size: 15px;
+  color: #94a3b8;
+  margin: 0 0 28px 0;
+  line-height: 1.6;
+}
+
+.yt-focus-allowed-list {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: #cbd5e1;
+  text-align: left;
+}
+
+.yt-focus-allowed-list ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+.yt-focus-allowed-list li {
+  margin-bottom: 4px;
+  color: #38bdf8;
+}
+
+.yt-focus-primary-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff !important;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.yt-focus-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.6);
+}
